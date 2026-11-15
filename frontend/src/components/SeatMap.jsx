@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Armchair, Check, Lock, Info } from 'lucide-react';
 
-const SeatMap = ({ coaches, selectedSeats = [], onSeatToggle, maxSelectable = 6 }) => {
+const SeatMap = ({ coaches, selectedSeats = [], onSeatToggle, maxSelectable = 6, initialCoachType }) => {
   const [activeCoachIdx, setActiveCoachIdx] = useState(0);
+
+  useEffect(() => {
+    if (initialCoachType && coaches && coaches.length > 0) {
+      const targetIdx = coaches.findIndex(c => c.coach_type === initialCoachType);
+      if (targetIdx >= 0) {
+        setActiveCoachIdx(targetIdx);
+      }
+    }
+  }, [initialCoachType, coaches]);
 
   if (!coaches || coaches.length === 0) {
     return (

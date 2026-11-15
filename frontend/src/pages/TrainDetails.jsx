@@ -25,7 +25,7 @@ const TrainDetails = () => {
   const [coaches, setCoaches] = useState([]);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [passengerCount, setPassengerCount] = useState(1);
-  const [autoAllocation, setAutoAllocation] = useState(true);
+  const [autoAllocation, setAutoAllocation] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -104,7 +104,7 @@ const TrainDetails = () => {
   const handleProceed = () => {
     const count = autoAllocation ? passengerCount : selectedSeats.length;
     if (count <= 0) {
-      showToast("Please select at least 1 seat or passenger.", "error");
+      showToast("Please select your seat(s) on the coach map below, or switch to Auto Allocation.", "error");
       return;
     }
 
@@ -290,6 +290,7 @@ const TrainDetails = () => {
           selectedSeats={selectedSeats}
           onSeatToggle={handleSeatToggle}
           maxSelectable={6}
+          initialCoachType={location.state?.travelClass || 'CC'}
         />
       )}
 

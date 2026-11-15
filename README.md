@@ -22,14 +22,15 @@
   * PDF generation CPU bound protection via counting semaphores (`threading.Semaphore(value=5)`).
 
 > [!IMPORTANT]
-> **Academic Simulation Notice:** RailSync is an educational railway reservation simulation system. It does not connect to live Indian Railways or IRCTC production systems. All financial transactions and ticketing operations are safe simulations. Dockerization is intentionally excluded from this release.
+> **Academic Simulation Notice:** RailSync is an educational railway reservation simulation system. It does not connect to live Indian Railways or IRCTC production systems. All financial transactions and ticketing operations are safe simulations. Containerization via Docker Compose is fully supported.
 
 ---
 
 ## 2. Key Features
 
 ### Passenger & User Experience
-* **Station Network & Train Discovery:** Search across 54 major Indian railway hubs and 48 express train services spanning 9 categories (Vande Bharat, Rajdhani, Shatabdi, Duronto, Garib Rath, Superfast, Mail/Express, Intercity, Express) with direct and intermediate stop matching.
+* **Station Network & Train Discovery:** Search across 55 major Indian railway hubs and 48 express train services spanning 9 categories (Vande Bharat, Rajdhani, Shatabdi, Duronto, Garib Rath, Superfast, Mail/Express, Intercity, Express) with direct and intermediate stop matching.
+* **Interactive Coach Seat Selection:** Pick exact physical seats from interactive coach layouts (`1A`, `2A`, `3A`, `CC`, `SL`) with immediate class synchronization or choose C++ deterministic auto-allocation.
 * **Intermediate Timetable Stops:** View complete train schedules across 206 route stops with intermediate stop sequences, arrival/departure times, halt durations, and distances from origin.
 * **Faceted Search Filters:** Filter trains by departure and arrival time slots (Early Morning, Morning, Mid-day, Night), train categories, travel classes (`1A`, `2A`, `3A`, `CC`, `SL`), live max fare slider, and seat availability.
 * **Quick Train Lookup:** Search directly by train number or train name (e.g. `12017`, `Duronto`, `Garib Rath`) with instant timetable and seat availability.
@@ -256,6 +257,18 @@ RailSync/
 
 ---
 
+### Quickstart via Docker Compose (Recommended)
+
+To run the entire multi-tier stack (MySQL 8.4, Flask + C++17 Engine, and React Nginx Frontend) in Docker:
+```bash
+docker compose up --build -d
+```
+- Frontend UI: [http://localhost:8080](http://localhost:8080)
+- Backend API Health: [http://localhost:5001/api/health](http://localhost:5001/api/health)
+- Detailed container documentation: [DOCKER_GUIDE.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/DOCKER_GUIDE.md)
+
+---
+
 ### Step 4: Verification & Automated Tests
 
 Run the full automated test suite using Pytest:
@@ -263,13 +276,25 @@ Run the full automated test suite using Pytest:
 $env:PYTHONPATH="backend"
 .\backend\venv\Scripts\pytest.exe -v backend\tests
 ```
-*Expected result: 47 passed in ~2.5 seconds (100% pass rate).*
+*Expected result: 52 passed in ~3.5 seconds (100% pass rate).*
 
 Verify the production frontend build:
 ```powershell
 npm --prefix frontend run build
 ```
 *Expected result: Vite production bundle builds cleanly in <1 second with 0 errors.*
+
+---
+
+## 8. Project Documentation & Academic Reports
+
+- **Academic Project Report:** [PROJECT_REPORT.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/PROJECT_REPORT.md)
+- **Containerization & Deployment Guide:** [DOCKER_GUIDE.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/DOCKER_GUIDE.md)
+- **Database Architecture & Data Dictionary:** [DATABASE_DOCUMENTATION.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/DATABASE_DOCUMENTATION.md)
+- **Installation & Setup Guide:** [SETUP_GUIDE.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/SETUP_GUIDE.md)
+- **REST API Specification:** [API_DOCUMENTATION.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/API_DOCUMENTATION.md)
+- **Final Audit Report:** [FINAL_PROJECT_AUDIT.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/FINAL_PROJECT_AUDIT.md)
+- **Test Verification Report:** [FINAL_TEST_REPORT.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/FINAL_TEST_REPORT.md)
 
 ---
 

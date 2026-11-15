@@ -753,19 +753,17 @@ const SearchTrains = () => {
                     type="button"
                     onClick={() => {
                       setShowCompareModal(false);
-                      navigate(`/passenger-details`, {
+                      navigate(`/train/${t.id}`, {
                         state: {
                           train: t,
                           journeyDate,
-                          travelClass: (t.classes && t.classes[0]?.coach_type) || 'CC',
-                          passengerCount: 1,
-                          autoAllocation: true
+                          travelClass: (t.classes && t.classes[0]?.coach_type) || 'CC'
                         }
                       });
                     }}
-                    className="w-full saffron-gradient text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition-all"
+                    className="w-full saffron-gradient text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition-all cursor-pointer"
                   >
-                    Select & Book This Train
+                    Select Seats & Book This Train
                   </button>
                 </div>
               ))}

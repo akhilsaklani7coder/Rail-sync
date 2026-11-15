@@ -22,14 +22,13 @@ const TrainCard = ({
     status_label: `AVL ${train.total_available_seats}`
   };
 
-  const handleBook = () => {
-    navigate(`/passenger-details`, {
+  const handleBook = (coachType) => {
+    const classToBook = coachType || selectedClass;
+    navigate(`/train/${train.id}`, {
       state: {
         train,
         journeyDate,
-        travelClass: selectedClass,
-        passengerCount: 1,
-        autoAllocation: true
+        travelClass: classToBook
       }
     });
   };
@@ -151,10 +150,10 @@ const TrainCard = ({
             )}
 
             <button
-              onClick={handleBook}
+              onClick={() => handleBook(selectedClass)}
               className="saffron-gradient hover:brightness-110 text-white font-bold px-6 py-3 rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95 text-xs sm:text-sm"
             >
-              <span>Book Now</span>
+              <span>Select Seats & Book</span>
               <ArrowRight size={15} />
             </button>
           </div>
@@ -167,7 +166,7 @@ const TrainCard = ({
         <div className="mt-5 pt-4 border-t border-slate-100">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Select Travel Class & Check Availability:</span>
-            <span className="text-[11px] text-slate-500">Includes reservation fee & charges</span>
+            <span className="text-[11px] text-slate-500">Click class or Book to choose seats</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
             {train.classes.map((c, i) => {
@@ -191,9 +190,21 @@ const TrainCard = ({
                     <span className={`text-[10px] font-bold ${isAvail ? 'text-emerald-700' : 'text-amber-700'}`}>
                       {c.status_label || (isAvail ? `AVL ${c.available}` : 'RAC 4')}
                     </span>
-                    <span className="text-[9px] uppercase font-bold text-slate-400">
-                      {isSelected ? 'Selected' : 'Select'}
-                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedClass(c.coach_type);
+                        handleBook(c.coach_type);
+                      }}
+                      className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer ${
+                        isSelected 
+                          ? 'bg-orange-600 text-white' 
+                          : 'text-orange-600 hover:bg-orange-100'
+                      }`}
+                    >
+                      Book
+                    </button>
                   </div>
                 </div>
               );
