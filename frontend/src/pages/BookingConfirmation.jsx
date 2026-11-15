@@ -54,7 +54,7 @@ const BookingConfirmation = () => {
             <div className="text-3xl sm:text-4xl font-mono font-black text-orange-400 tracking-wider mt-0.5">
               {pnr}
             </div>
-            <span className="text-xs text-slate-400 mt-1 block">Class: <b className="text-white">{travelClass || 'CC'}</b></span>
+            <span className="text-xs text-slate-400 mt-1 block">Class: <b className="text-white">{travel_class || 'CC'}</b></span>
           </div>
 
           <div className="flex items-center gap-4">

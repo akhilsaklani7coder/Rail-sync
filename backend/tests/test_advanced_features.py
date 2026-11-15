@@ -120,3 +120,4 @@ def test_admin_train_stops_management(admin_client):
     res_stops = admin_client.get('/api/admin/trains/1/stops')
     assert res_stops.status_code == 200
     assert 'stops' in res_stops.get_json()
+

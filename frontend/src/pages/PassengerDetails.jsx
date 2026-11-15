@@ -16,9 +16,11 @@ const PassengerDetails = () => {
 
   const train = location.state?.train;
   const journeyDate = location.state?.journeyDate;
-  const initialClass = location.state?.travelClass || 'CC';
-  const initialCount = location.state?.passengerCount || 1;
   const selectedSeats = location.state?.selectedSeats || [];
+  const initialClass = (selectedSeats.length > 0 && selectedSeats[0]?.coach_type) 
+    ? selectedSeats[0].coach_type 
+    : (location.state?.travelClass || 'CC');
+  const initialCount = location.state?.passengerCount || 1;
   const autoAllocation = location.state?.autoAllocation ?? true;
 
   const [travelClass, setTravelClass] = useState(initialClass);
@@ -121,6 +123,9 @@ const PassengerDetails = () => {
     }
 
     const calculatedTotal = fareQuote?.total_amount || (train.base_fare * passengers.length);
+    const isClassChanged = selectedSeats.length > 0 && selectedSeats[0]?.coach_type !== travelClass;
+    const finalAutoAllocation = autoAllocation || isClassChanged;
+    const finalSeatIds = finalAutoAllocation ? null : selectedSeats.map(s => s.id);
 
     navigate('/payment', {
       state: {
@@ -128,10 +133,10 @@ const PassengerDetails = () => {
         journeyDate,
         travelClass,
         passengers,
-        selectedSeatIds: autoAllocation ? null : selectedSeats.map(s => s.id),
+        selectedSeatIds: finalSeatIds,
         totalAmount: calculatedTotal,
         fareQuote,
-        autoAllocation
+        autoAllocation: finalAutoAllocation
       }
     });
   };

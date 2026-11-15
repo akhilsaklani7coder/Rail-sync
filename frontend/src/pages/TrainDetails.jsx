@@ -108,10 +108,16 @@ const TrainDetails = () => {
       return;
     }
 
+    // Authoritative class resolution: prioritize selected seat coach_type, then router state, fallback to CC
+    const derivedClass = selectedSeats.length > 0
+      ? (selectedSeats[0].coach_type || 'CC')
+      : (location.state?.travelClass || 'CC');
+
     navigate('/passenger-details', {
       state: {
         train,
         journeyDate,
+        travelClass: derivedClass,
         passengerCount: count,
         selectedSeats: autoAllocation ? [] : selectedSeats,
         autoAllocation

@@ -43,6 +43,20 @@ def search():
     travel_class = request.args.get('class', type=str)
     train_type = request.args.get('train_type', type=str)
     departure_slot = request.args.get('departure_slot', type=str)
+    arrival_slot = request.args.get('arrival_slot', type=str)
+    min_fare = request.args.get('min_fare', type=float)
+    max_fare = request.args.get('max_fare', type=float)
+    only_avail = request.args.get('only_available') in ['true', '1', 'True']
+    train_query = request.args.get('train_query') or request.args.get('q')
+
+    # If direct keyword lookup requested without origin/destination
+    if train_query and (not src_id or not dst_id):
+        results = TrainService.search_by_keyword(train_query, journey_date_str=j_date)
+        return jsonify({
+            "trains": results,
+            "count": len(results),
+            "dijkstra_path": None
+        })
 
     if not src_id or not dst_id:
         return jsonify({"error": "Source station and Destination station are required."}), 400
@@ -55,7 +69,12 @@ def search():
         journey_date_str=j_date,
         travel_class=travel_class,
         train_type=train_type,
-        departure_slot=departure_slot
+        departure_slot=departure_slot,
+        arrival_slot=arrival_slot,
+        min_fare=min_fare,
+        max_fare=max_fare,
+        only_available=only_avail,
+        train_query=train_query
     )
     if isinstance(results, dict) and 'error' in results:
         return jsonify(results), 400

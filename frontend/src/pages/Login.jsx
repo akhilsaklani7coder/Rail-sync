@@ -15,6 +15,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const from = location.state?.from?.pathname || '/';
+  const previousState = location.state?.from?.state;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +23,7 @@ const Login = () => {
     setLoading(true);
     try {
       await login(email, password);
-      navigate(from, { replace: true });
+      navigate(from, { replace: true, state: previousState });
     } catch (err) {
       setError(err.message || 'Login failed. Please check credentials.');
     } finally {

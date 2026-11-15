@@ -29,15 +29,16 @@
 ## 2. Key Features
 
 ### Passenger & User Experience
-* **Station Network & Train Discovery:** Search across 32 major Indian railway hubs and 38 express train services with date validation and duration calculation.
-* **Intermediate Timetable Stops:** View complete train schedules with intermediate stop sequences, arrival/departure times, halt durations, and distances from origin.
-* **Faceted Search Filters:** Filter trains by departure time slots (Early Morning, Morning, Mid-day, Night), train categories (Vande Bharat, Rajdhani, Shatabdi, Superfast, Express), travel classes, and seat availability.
+* **Station Network & Train Discovery:** Search across 54 major Indian railway hubs and 48 express train services spanning 9 categories (Vande Bharat, Rajdhani, Shatabdi, Duronto, Garib Rath, Superfast, Mail/Express, Intercity, Express) with direct and intermediate stop matching.
+* **Intermediate Timetable Stops:** View complete train schedules across 206 route stops with intermediate stop sequences, arrival/departure times, halt durations, and distances from origin.
+* **Faceted Search Filters:** Filter trains by departure and arrival time slots (Early Morning, Morning, Mid-day, Night), train categories, travel classes (`1A`, `2A`, `3A`, `CC`, `SL`), live max fare slider, and seat availability.
+* **Quick Train Lookup:** Search directly by train number or train name (e.g. `12017`, `Duronto`, `Garib Rath`) with instant timetable and seat availability.
 * **Side-by-Side Train Comparison:** Compare 2 to 3 trains simultaneously across departure/arrival timings, journey duration, physical distance, class fares, and seat counts.
-* **Dynamic Multi-Class Fare Calculator:** Rules-based fare engine computing accurate fares across AC First Class (`1A`), AC 2-Tier (`2A`), AC 3-Tier (`3A`), AC Chair Car (`CC`), and Sleeper (`SL`) with class multipliers, reservation fees, superfast surcharges, and 5% statutory GST on AC classes.
+* **Dynamic Multi-Class Fare Calculator:** Rules-based fare engine computing authoritative fares across AC First Class (`1A`), AC 2-Tier (`2A`), AC 3-Tier (`3A`), AC Chair Car (`CC`), and Sleeper (`SL`) with class multipliers, reservation fees, superfast surcharges, and 5% statutory GST on AC classes.
 * **Multi-Passenger Booking with Berth Preferences:** Book up to 6 passengers per ticket with individual preferences (`Lower`, `Upper`, `Middle`, `Side Lower`, `Side Upper`, `Window`, `Aisle`).
 * **RAC & Waiting List Queue Simulation:** When confirmed capacity is exhausted, passengers are queued into RAC (Reservation Against Cancellation, up to 8 per class) and Waiting List (WL).
 * **Automatic Waitlist Promotion:** When a confirmed booking is cancelled, released seats are automatically and transactionally allocated to queued RAC and WL passengers in strict FIFO order.
-* **Multi-Option Simulated Payment Gateway:** Tabbed simulated gateway supporting UPI (GPay, PhonePe, Paytm, QR), Credit/Debit Cards (with test auto-fill), and Net Banking (SBI, HDFC, ICICI, Axis, PNB), featuring outcome toggles (Simulate Success vs Bank Decline).
+* **Step 4 Simulated Payment Gateway:** Multi-method simulated gateway supporting UPI, Credit/Debit Cards, and Net Banking with deterministic test simulation toggles (Simulate Success vs Bank Decline), explicit state machine, idempotency key protection, and dedicated failure recovery with state preservation.
 * **Dynamic Vector QR Code Verification:** Generates real-time verification QR codes embedded in Electronic Reservation Slips and ReportLab PDF tickets.
 * **Public PNR Status Inquiry:** Real-time PNR tracking with privacy-preserving passenger name masking for unauthenticated or non-owner lookups (`Rohan S***`).
 * **Official PDF Ticket Generation:** Download printable e-tickets with embedded QR codes, journey details, passenger manifests, and fare breakdowns.
@@ -64,7 +65,7 @@
 | **Database** | MySQL 8.4 Server (InnoDB Engine, Strict ACID, Row-Level Locking, 14 3NF Tables) |
 | **Algorithm Engine** | C++17 Standard Library, `std::mutex`, `std::priority_queue` (Min-Heap) |
 | **Language Interop** | Python 64-bit `ctypes` CDLL in-memory ABI bridge + Native CLI executable fallback |
-| **Testing** | Pytest 9.1 (47 automated tests passing 100%) |
+| **Testing** | Pytest 9.1 (52 automated tests passing 100%) |
 
 ---
 

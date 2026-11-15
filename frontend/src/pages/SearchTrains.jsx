@@ -31,12 +31,15 @@ const SearchTrains = () => {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState('');
-  const [sortBy, setSortBy] = useState('DEPARTURE'); // 'DEPARTURE', 'DURATION', 'FARE'
+  const [sortBy, setSortBy] = useState('DEPARTURE'); // 'DEPARTURE', 'DEPARTURE_DESC', 'ARRIVAL', 'DURATION', 'FARE', 'FARE_DESC'
 
-  // Faceted Filters State
+  // Faceted Filters & Quick Search State
+  const [trainSearchKeyword, setTrainSearchKeyword] = useState('');
   const [selectedSlot, setSelectedSlot] = useState('ALL'); // 'ALL', 'early_morning', 'morning', 'midday', 'night'
-  const [selectedCategory, setSelectedCategory] = useState('ALL'); // 'ALL', 'VANDE_BHARAT', 'RAJDHANI', 'SHATABDI', 'SUPERFAST', 'EXPRESS'
-  const [selectedClassFilter, setSelectedClassFilter] = useState('ALL'); // 'ALL', '1A', '2A', '3A', 'CC', 'SL'
+  const [selectedArrivalSlot, setSelectedArrivalSlot] = useState('ALL');
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [selectedClassFilter, setSelectedClassFilter] = useState('ALL');
+  const [maxFareLimit, setMaxFareLimit] = useState(3500);
   const [onlyAvailable, setOnlyAvailable] = useState(false);
 
   // Train Comparison Modal State
@@ -161,6 +164,14 @@ const SearchTrains = () => {
   // Filtered & Sorted Trains
   const processedTrains = useMemo(() => {
     return trains.filter(t => {
+      // 0. Keyword filter
+      if (trainSearchKeyword.trim()) {
+        const kw = trainSearchKeyword.toLowerCase();
+        if (!t.train_number.toLowerCase().includes(kw) && !t.train_name.toLowerCase().includes(kw)) {
+          return false;
+        }
+      }
+
       // 1. Departure slot filter
       if (selectedSlot !== 'ALL') {
         const hour = parseInt(t.departure_time.split(':')[0], 10);
@@ -170,34 +181,55 @@ const SearchTrains = () => {
         if (selectedSlot === 'night' && !(hour >= 18 && hour < 24)) return false;
       }
 
-      // 2. Train category filter
+      // 2. Arrival slot filter
+      if (selectedArrivalSlot !== 'ALL') {
+        const hour = parseInt(t.arrival_time.split(':')[0], 10);
+        if (selectedArrivalSlot === 'early_morning' && !(hour >= 0 && hour < 6)) return false;
+        if (selectedArrivalSlot === 'morning' && !(hour >= 6 && hour < 12)) return false;
+        if (selectedArrivalSlot === 'midday' && !(hour >= 12 && hour < 18)) return false;
+        if (selectedArrivalSlot === 'night' && !(hour >= 18 && hour < 24)) return false;
+      }
+
+      // 3. Train category filter
       if (selectedCategory !== 'ALL' && t.train_type !== selectedCategory) {
         return false;
       }
 
-      // 3. Class filter
+      // 4. Class filter
       if (selectedClassFilter !== 'ALL') {
         const hasClass = (t.classes || []).some(c => c.coach_type === selectedClassFilter);
         if (!hasClass) return false;
       }
 
-      // 4. Availability filter
+      // 5. Availability filter
       if (onlyAvailable && t.total_available_seats <= 0) {
         return false;
+      }
+
+      // 6. Max fare filter
+      if (maxFareLimit < 3500) {
+        const minTrainFare = Math.min(...(t.classes || []).map(c => c.fare), t.base_fare);
+        if (minTrainFare > maxFareLimit) return false;
       }
 
       return true;
     }).sort((a, b) => {
       if (sortBy === 'FARE') {
         return a.base_fare - b.base_fare;
+      } else if (sortBy === 'FARE_DESC') {
+        return b.base_fare - a.base_fare;
       } else if (sortBy === 'DURATION') {
         const durA = parseInt(a.duration) || 0;
         const durB = parseInt(b.duration) || 0;
         return durA - durB;
+      } else if (sortBy === 'ARRIVAL') {
+        return a.arrival_time.localeCompare(b.arrival_time);
+      } else if (sortBy === 'DEPARTURE_DESC') {
+        return b.departure_time.localeCompare(a.departure_time);
       }
       return a.departure_time.localeCompare(b.departure_time);
     });
-  }, [trains, selectedSlot, selectedCategory, selectedClassFilter, onlyAvailable, sortBy]);
+  }, [trains, trainSearchKeyword, selectedSlot, selectedArrivalSlot, selectedCategory, selectedClassFilter, onlyAvailable, maxFareLimit, sortBy]);
 
   const comparedTrainsList = useMemo(() => {
     return trains.filter(t => comparedTrainIds.includes(t.id));
@@ -212,13 +244,36 @@ const SearchTrains = () => {
       {/* Search Modifier Bar */}
       <div className="bg-slate-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 relative overflow-hidden">
         <div className="relative z-10">
-          <div className="mb-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-orange-400">
-              Indian Railway Portal • Search Services
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1">
-              Find & Reserve Train Tickets
-            </h1>
+          <div className="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-orange-400">
+                Indian Railway Portal • Search Services
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1">
+                Find & Reserve Train Tickets
+              </h1>
+            </div>
+
+            {/* Quick Train # or Name Search Input */}
+            <div className="relative min-w-[280px]">
+              <input
+                type="text"
+                placeholder="Search train name or # (e.g. 12017, Duronto)..."
+                value={trainSearchKeyword}
+                onChange={(e) => setTrainSearchKeyword(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-2xl pl-10 pr-9 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 font-medium"
+              />
+              <Search size={16} className="absolute left-3.5 top-3 text-slate-400" />
+              {trainSearchKeyword && (
+                <button
+                  type="button"
+                  onClick={() => setTrainSearchKeyword('')}
+                  className="absolute right-3 top-2.5 text-slate-400 hover:text-white cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
           </div>
 
           <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
@@ -357,18 +412,21 @@ const SearchTrains = () => {
                 <SlidersHorizontal size={16} className="text-orange-500" />
                 Filter Journeys
               </h3>
-              {(selectedSlot !== 'ALL' || selectedCategory !== 'ALL' || selectedClassFilter !== 'ALL' || onlyAvailable) && (
+              {(selectedSlot !== 'ALL' || selectedArrivalSlot !== 'ALL' || selectedCategory !== 'ALL' || selectedClassFilter !== 'ALL' || onlyAvailable || maxFareLimit < 3500 || trainSearchKeyword) && (
                 <button
                   type="button"
                   onClick={() => {
                     setSelectedSlot('ALL');
+                    setSelectedArrivalSlot('ALL');
                     setSelectedCategory('ALL');
                     setSelectedClassFilter('ALL');
                     setOnlyAvailable(false);
+                    setMaxFareLimit(3500);
+                    setTrainSearchKeyword('');
                   }}
                   className="text-[11px] font-bold text-orange-600 hover:underline cursor-pointer"
                 >
-                  Reset
+                  Reset All
                 </button>
               )}
             </div>
@@ -402,6 +460,35 @@ const SearchTrains = () => {
               </div>
             </div>
 
+            {/* Arrival Time Slots */}
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
+                Arrival Time
+              </label>
+              <div className="space-y-1.5 text-xs">
+                {[
+                  { id: 'ALL', label: 'Any Arrival Time' },
+                  { id: 'early_morning', label: 'Early Morning (00:00 - 06:00)' },
+                  { id: 'morning', label: 'Morning (06:00 - 12:00)' },
+                  { id: 'midday', label: 'Mid-day (12:00 - 18:00)' },
+                  { id: 'night', label: 'Night (18:00 - 24:00)' }
+                ].map(slot => (
+                  <label key={slot.id} className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="arrivalSlot"
+                      checked={selectedArrivalSlot === slot.id}
+                      onChange={() => setSelectedArrivalSlot(slot.id)}
+                      className="text-orange-500 focus:ring-orange-400"
+                    />
+                    <span className={selectedArrivalSlot === slot.id ? 'font-bold text-slate-900' : 'text-slate-600'}>
+                      {slot.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
             {/* Train Category */}
             <div className="space-y-2 pt-2 border-t border-slate-100">
               <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
@@ -413,8 +500,12 @@ const SearchTrains = () => {
                   { id: 'VANDE_BHARAT', label: 'Vande Bharat Express' },
                   { id: 'RAJDHANI', label: 'Rajdhani Express' },
                   { id: 'SHATABDI', label: 'Shatabdi Express' },
+                  { id: 'DURONTO', label: 'Duronto Express' },
+                  { id: 'GARIB_RATH', label: 'Garib Rath Express' },
                   { id: 'SUPERFAST', label: 'Superfast Trains' },
-                  { id: 'EXPRESS', label: 'Mail / Express' }
+                  { id: 'MAIL_EXPRESS', label: 'Mail / Express' },
+                  { id: 'INTERCITY', label: 'Intercity Express' },
+                  { id: 'EXPRESS', label: 'Express' }
                 ].map(cat => (
                   <label key={cat.id} className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 cursor-pointer">
                     <input
@@ -452,6 +543,27 @@ const SearchTrains = () => {
                     {cls}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Max Fare Range Slider */}
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              <div className="flex justify-between items-center text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                <span>Max Fare</span>
+                <span className="text-orange-600 font-mono font-bold">₹{maxFareLimit}</span>
+              </div>
+              <input
+                type="range"
+                min="200"
+                max="3500"
+                step="50"
+                value={maxFareLimit}
+                onChange={(e) => setMaxFareLimit(Number(e.target.value))}
+                className="w-full accent-orange-500 cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                <span>₹200</span>
+                <span>₹3500+</span>
               </div>
             </div>
 
@@ -507,12 +619,21 @@ const SearchTrains = () => {
               <div className="inline-flex rounded-xl bg-slate-100 p-1 text-xs">
                 <button
                   type="button"
-                  onClick={() => setSortBy('DEPARTURE')}
+                  onClick={() => setSortBy(sortBy === 'DEPARTURE' ? 'DEPARTURE_DESC' : 'DEPARTURE')}
                   className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
-                    sortBy === 'DEPARTURE' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    sortBy.startsWith('DEPARTURE') ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Departure
+                  Departure {sortBy === 'DEPARTURE_DESC' ? '↓' : '↑'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortBy('ARRIVAL')}
+                  className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                    sortBy === 'ARRIVAL' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Arrival
                 </button>
                 <button
                   type="button"
@@ -525,12 +646,12 @@ const SearchTrains = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSortBy('FARE')}
+                  onClick={() => setSortBy(sortBy === 'FARE' ? 'FARE_DESC' : 'FARE')}
                   className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
-                    sortBy === 'FARE' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    sortBy.startsWith('FARE') ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Price
+                  Price {sortBy === 'FARE_DESC' ? '↓' : '↑'}
                 </button>
               </div>
             </div>

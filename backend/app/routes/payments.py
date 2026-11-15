@@ -25,10 +25,13 @@ def simulate_payment():
     if outcome == 'FAILURE':
         return jsonify({
             "status": "FAILED",
+            "success": False,
             "transaction_id": txn_id,
             "bank_ref_number": bank_ref,
             "payment_method": method,
-            "message": "Payment simulation was intentionally declined or marked as failed."
+            "amount": amount,
+            "message": "Payment simulation declined: The issuing bank or payment gateway rejected authorization (Test Mode Decline).",
+            "can_retry": True
         }), 400
 
     # If booking_id provided, record into payments table

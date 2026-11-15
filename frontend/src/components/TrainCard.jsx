@@ -42,8 +42,16 @@ const TrainCard = ({
         return 'bg-red-600 text-white';
       case 'SHATABDI':
         return 'bg-purple-600 text-white';
+      case 'DURONTO':
+        return 'bg-emerald-600 text-white';
+      case 'GARIB_RATH':
+        return 'bg-teal-700 text-white';
       case 'SUPERFAST':
         return 'bg-amber-600 text-white';
+      case 'MAIL_EXPRESS':
+        return 'bg-indigo-600 text-white';
+      case 'INTERCITY':
+        return 'bg-cyan-700 text-white';
       default:
         return 'bg-slate-700 text-white';
     }

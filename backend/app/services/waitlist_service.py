@@ -114,3 +114,4 @@ class WaitlistService:
 
         logger.info(f"Promoted passenger {p_id} from {candidate['entry_type']} to CONFIRMED on seat {released_seat_id}")
         return True, p_id
+

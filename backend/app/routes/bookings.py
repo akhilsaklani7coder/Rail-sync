@@ -96,6 +96,7 @@ def cancel_booking(pnr):
     return jsonify(result)
 
 @bookings_bp.route('/<string:pnr>/ticket.pdf', methods=['GET'])
+@bookings_bp.route('/<string:pnr>/pdf', methods=['GET'])
 def download_pdf(pnr):
     user_id = session.get('user_id')
     is_admin = session.get('role') == 'ADMIN'

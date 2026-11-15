@@ -44,7 +44,9 @@ class TrainService:
             return cursor.fetchone()
 
     @staticmethod
-    def search_trains(source_id, destination_id, journey_date_str=None, travel_class=None, train_type=None, departure_slot=None):
+    def search_trains(source_id, destination_id, journey_date_str=None, travel_class=None, 
+                      train_type=None, departure_slot=None, arrival_slot=None,
+                      min_fare=None, max_fare=None, only_available=False, train_query=None):
         if not source_id or not destination_id:
             return []
 
@@ -76,7 +78,7 @@ class TrainService:
                 return {"error": "One or both selected stations do not exist or are inactive."}
 
         query = """
-            SELECT 
+            SELECT DISTINCT
                 t.id,
                 t.train_number,
                 t.train_name,
@@ -89,18 +91,32 @@ class TrainService:
                 s1.station_code AS source_station_code,
                 s2.station_name AS destination_station_name,
                 s2.station_code AS destination_station_code,
-                r.distance_km,
-                r.travel_duration_minutes
+                COALESCE(r.distance_km, (
+                    SELECT ABS(ts2.distance_from_origin_km - ts1.distance_from_origin_km)
+                    FROM train_stops ts1
+                    JOIN train_stops ts2 ON ts1.train_id = ts2.train_id
+                    WHERE ts1.train_id = t.id AND ts1.station_id = %s AND ts2.station_id = %s
+                    LIMIT 1
+                ), 500) AS distance_km,
+                COALESCE(r.travel_duration_minutes, 360) AS travel_duration_minutes
             FROM trains t
             INNER JOIN stations s1 ON t.source_station_id = s1.id
             INNER JOIN stations s2 ON t.destination_station_id = s2.id
             LEFT JOIN routes r ON r.source_station_id = t.source_station_id 
                                AND r.destination_station_id = t.destination_station_id
-            WHERE t.source_station_id = %s 
-              AND t.destination_station_id = %s 
-              AND t.is_active = TRUE
+            WHERE t.is_active = TRUE AND (
+                (t.source_station_id = %s AND t.destination_station_id = %s)
+                OR EXISTS (
+                    SELECT 1 FROM train_stops ts1
+                    JOIN train_stops ts2 ON ts1.train_id = ts2.train_id
+                    WHERE ts1.train_id = t.id
+                      AND ts1.station_id = %s
+                      AND ts2.station_id = %s
+                      AND ts1.stop_sequence < ts2.stop_sequence
+                )
+            )
         """
-        params = [source_id, destination_id]
+        params = [source_id, destination_id, source_id, destination_id, source_id, destination_id]
 
         if train_type and train_type.upper() != 'ALL':
             query += " AND t.train_type = %s"
@@ -119,12 +135,8 @@ class TrainService:
                 dep_time_str = str(t['departure_time'])[:5]
                 dep_hour = int(dep_time_str.split(':')[0])
 
-                # Optional departure time slot filter
-                # early_morning: 00:00 - 06:00
-                # morning: 06:00 - 12:00
-                # midday: 12:00 - 18:00
-                # night: 18:00 - 24:00
-                if departure_slot:
+                # Departure time slot filter
+                if departure_slot and departure_slot.upper() != 'ALL':
                     slot = departure_slot.lower()
                     if slot == 'early_morning' and not (0 <= dep_hour < 6):
                         continue
@@ -135,7 +147,27 @@ class TrainService:
                     elif slot == 'night' and not (18 <= dep_hour <= 23):
                         continue
 
-                # Calculate available seats for this specific journey_date grouped by coach_type
+                # Arrival time slot filter
+                arr_time_str = str(t['arrival_time'])[:5]
+                arr_hour = int(arr_time_str.split(':')[0])
+                if arrival_slot and arrival_slot.upper() != 'ALL':
+                    a_slot = arrival_slot.lower()
+                    if a_slot == 'early_morning' and not (0 <= arr_hour < 6):
+                        continue
+                    elif a_slot == 'morning' and not (6 <= arr_hour < 12):
+                        continue
+                    elif a_slot == 'midday' and not (12 <= arr_hour < 18):
+                        continue
+                    elif a_slot == 'night' and not (18 <= arr_hour <= 23):
+                        continue
+
+                # Keyword quick filter
+                if train_query:
+                    tq = train_query.strip().lower()
+                    if tq not in t['train_number'].lower() and tq not in t['train_name'].lower():
+                        continue
+
+                # Calculate available seats for this journey_date grouped by coach_type
                 avail_query = """
                     SELECT 
                         c.coach_type,
@@ -168,10 +200,9 @@ class TrainService:
                         num_passengers=1
                     )
 
-                    # RAC / WL status if available seats are 0
                     status_label = f"AVL {avail}"
                     if avail == 0:
-                        status_label = "RAC 4" # Simulated RAC availability
+                        status_label = "RAC 4"
 
                     classes.append({
                         "coach_type": c_type,
@@ -181,13 +212,25 @@ class TrainService:
                         "status_label": status_label
                     })
 
-                # Filter by class if specified
+                # Filter by travel class if specified
                 if travel_class and travel_class.upper() != 'ALL':
                     matching_class = [c for c in classes if c['coach_type'] == travel_class.upper()]
                     if not matching_class:
                         continue
 
-                arr_time_str = str(t['arrival_time'])[:5]
+                total_available = max(0, total_seats - booked_seats)
+                # Filter by seat availability if only_available is True
+                if only_available and total_available <= 0:
+                    continue
+
+                # Filter by fare range if specified
+                fares = [c['fare'] for c in classes] if classes else [float(t['base_fare'])]
+                min_class_fare = min(fares) if fares else float(t['base_fare'])
+                if min_fare is not None and min_class_fare < float(min_fare):
+                    continue
+                if max_fare is not None and min_class_fare > float(max_fare):
+                    continue
+
                 dur_mins = t['travel_duration_minutes'] or 360
                 hours = dur_mins // 60
                 mins = dur_mins % 60
@@ -205,6 +248,108 @@ class TrainService:
                     "departure_time": dep_time_str,
                     "arrival_time": arr_time_str,
                     "duration": duration_str,
+                    "distance_km": t['distance_km'] or 300,
+                    "base_fare": float(t['base_fare']),
+                    "total_available_seats": total_available,
+                    "classes": classes,
+                    "journey_date": journey_date_str
+                })
+
+        return trains
+
+    @staticmethod
+    def search_by_keyword(keyword, journey_date_str=None):
+        """
+        Direct search by train number or train name with real-time seat availability.
+        """
+        if not keyword:
+            return []
+        if not journey_date_str:
+            journey_date_str = date.today().strftime("%Y-%m-%d")
+
+        param = f"%{keyword.strip()}%"
+        query = """
+            SELECT 
+                t.id, t.train_number, t.train_name, t.train_type,
+                t.departure_time, t.arrival_time, t.running_days, t.base_fare,
+                s1.station_name AS source_station_name, s1.station_code AS source_station_code,
+                s2.station_name AS destination_station_name, s2.station_code AS destination_station_code,
+                COALESCE(r.distance_km, 500) as distance_km,
+                COALESCE(r.travel_duration_minutes, 360) as travel_duration_minutes
+            FROM trains t
+            INNER JOIN stations s1 ON t.source_station_id = s1.id
+            INNER JOIN stations s2 ON t.destination_station_id = s2.id
+            LEFT JOIN routes r ON r.source_station_id = t.source_station_id 
+                               AND r.destination_station_id = t.destination_station_id
+            WHERE t.is_active = TRUE 
+              AND (t.train_number LIKE %s OR t.train_name LIKE %s)
+            ORDER BY t.departure_time ASC
+        """
+        trains = []
+        with get_db_connection() as (conn, cursor):
+            cursor.execute(query, (param, param))
+            raw_trains = cursor.fetchall()
+
+            for t in raw_trains:
+                t_id = t['id']
+                t_type = t.get('train_type') or 'EXPRESS'
+                dep_time_str = str(t['departure_time'])[:5]
+                arr_time_str = str(t['arrival_time'])[:5]
+
+                avail_query = """
+                    SELECT 
+                        c.coach_type,
+                        COUNT(s.id) AS total_capacity,
+                        COUNT(sa.id) AS booked_count
+                    FROM coaches c
+                    INNER JOIN seats s ON s.coach_id = c.id AND s.is_active = TRUE
+                    LEFT JOIN seat_allocations sa ON sa.seat_id = s.id 
+                                                 AND sa.journey_date = %s
+                    WHERE c.train_id = %s
+                    GROUP BY c.coach_type
+                """
+                cursor.execute(avail_query, (journey_date_str, t_id))
+                coach_avail = cursor.fetchall()
+
+                total_seats = 0
+                booked_seats = 0
+                classes = []
+                for ca in coach_avail:
+                    avail = max(0, ca['total_capacity'] - ca['booked_count'])
+                    total_seats += ca['total_capacity']
+                    booked_seats += ca['booked_count']
+                    c_type = ca['coach_type']
+
+                    fare_calc = FareService.calculate_fare(
+                        train_base_fare=t['base_fare'],
+                        travel_class=c_type,
+                        train_type=t_type,
+                        num_passengers=1
+                    )
+                    classes.append({
+                        "coach_type": c_type,
+                        "available": avail,
+                        "total": ca['total_capacity'],
+                        "fare": fare_calc['total_amount'],
+                        "status_label": f"AVL {avail}" if avail > 0 else "RAC 4"
+                    })
+
+                dur_mins = t['travel_duration_minutes'] or 360
+                hours = dur_mins // 60
+                mins = dur_mins % 60
+
+                trains.append({
+                    "id": t['id'],
+                    "train_number": t['train_number'],
+                    "train_name": t['train_name'],
+                    "train_type": t_type,
+                    "source_station_name": t['source_station_name'],
+                    "source_station_code": t['source_station_code'],
+                    "destination_station_name": t['destination_station_name'],
+                    "destination_station_code": t['destination_station_code'],
+                    "departure_time": dep_time_str,
+                    "arrival_time": arr_time_str,
+                    "duration": f"{hours}h {mins}m",
                     "distance_km": t['distance_km'] or 300,
                     "base_fare": float(t['base_fare']),
                     "total_available_seats": max(0, total_seats - booked_seats),

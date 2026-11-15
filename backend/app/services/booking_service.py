@@ -39,6 +39,30 @@ class BookingService:
 
         try:
             with get_db_transaction() as (conn, cursor):
+                # 1b. Check Idempotency if transaction_id provided
+                txn_id = (payment_details or {}).get('transaction_id')
+                if txn_id:
+                    cursor.execute(
+                        """
+                        SELECT b.pnr, b.id as booking_id 
+                        FROM payments p 
+                        JOIN bookings b ON p.booking_id = b.id 
+                        WHERE p.transaction_id = %s
+                        """,
+                        (txn_id,)
+                    )
+                    existing_txn = cursor.fetchone()
+                    if existing_txn:
+                        existing_booking = BookingService.get_booking_by_pnr(existing_txn['pnr'], user_id=user_id)
+                        return {
+                            "success": True,
+                            "pnr": existing_txn['pnr'],
+                            "booking_id": existing_txn['booking_id'],
+                            "booking": existing_booking,
+                            "is_duplicate": True,
+                            "message": "Booking already processed with this transaction ID."
+                        }
+
                 # 2. Validate train and calculate dynamic fare breakdown
                 cursor.execute(
                     "SELECT id, train_number, train_name, train_type, base_fare, is_active FROM trains WHERE id = %s",
@@ -280,6 +304,7 @@ class BookingService:
                     "fare_breakdown": fare_breakdown,
                     "journey_date": journey_date_str,
                     "assigned_seats": passengers_result,
+                    "passengers": passengers_result,
                     "payment": {
                         "transaction_id": txn_id,
                         "payment_method": pay_method,

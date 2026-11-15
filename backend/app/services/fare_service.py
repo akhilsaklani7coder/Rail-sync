@@ -53,7 +53,7 @@ class FareService:
         res_fee = cls.RESERVATION_FEES.get(travel_class, 40.00)
 
         # 3. Superfast / Flagship Surcharge
-        is_superfast = train_type in ['VANDE_BHARAT', 'RAJDHANI', 'SHATABDI', 'SUPERFAST']
+        is_superfast = train_type in ['VANDE_BHARAT', 'RAJDHANI', 'SHATABDI', 'SUPERFAST', 'DURONTO', 'GARIB_RATH']
         superfast_charge = cls.SUPERFAST_CHARGES.get(travel_class, 45.00) if is_superfast else 0.00
 
         # Subtotal per passenger before GST
@@ -109,3 +109,4 @@ class FareService:
             "booking_status": booking_status,
             "travel_class": travel_class
         }
+
