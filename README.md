@@ -305,10 +305,10 @@ npm --prefix frontend run build
 |---|---|---|
 | **Umanga** | **Team Leader & DevOps Architect** | Docker Compose, Containerization, Nginx Reverse Proxy, Git Governance |
 | **Akhil** | **Core Backend Architect** | Flask REST API, Booking Service, Payment Simulation, Fare Engine, Waitlist |
-| **Aditya** | **Frontend Architect & UI/UX Lead** | React 18 SPA, Faceted Search, Coach Seat Map, Checkout Modal, PNR UI |
-| **Vedansh** | **Database Architect** | MySQL 8.4 Schema (14 tables), Row Locking (`FOR UPDATE`), 206 Stops Dataset |
+| **Vedansh** | **Frontend Architect & UI/UX Lead** | React 18 SPA, Faceted Search, Coach Seat Map, Checkout Modal, PNR UI |
+| **Aditya** | **Database Architect** | MySQL 8.4 Schema (14 tables), Row Locking (`FOR UPDATE`), 206 Stops Dataset |
 | **Yash** | **Systems & Algorithms Engineer** | C++17 Dijkstra Engine ($\mathcal{O}((V+E)\log V)$), Mutex Synchronization, Python `ctypes` Bridge |
-| **Abhinav** | **QA Lead & Documentation Specialist** | 52 Automated Pytest Tests, Concurrency Verification, Academic Reports |
+| **Abhinav** | **Security, Diagnostics & QA Lead** | System Diagnostics API, QR Crypto Verification, 52 Pytest Tests |
 
 *Detailed task ownership, file mappings, and viva topics: [TEAM_TASK_DIVISION.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/TEAM_TASK_DIVISION.md)*
 

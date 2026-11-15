@@ -6,10 +6,10 @@
 **Project Team:**
 - **Umanga** (Team Leader & DevOps / System Architect)
 - **Akhil** (Core Backend Architect & Flask REST API Engineer)
-- **Aditya** (Frontend Architect & UI/UX Specialist)
-- **Vedansh** (Database Architect & SQL Concurrency Engineer)
+- **Vedansh** (Frontend Architect & UI/UX Specialist)
+- **Aditya** (Database Architect & SQL Concurrency Engineer)
 - **Yash** (Systems & Algorithms Engineer — C++17 Engine)
-- **Abhinav** (Quality Assurance, Automated Testing & Documentation)
+- **Abhinav** (Security, Diagnostics, QR Cryptography & QA Lead)
 
 **Repository:** [https://github.com/akhilsaklani7coder/Rail-sync](https://github.com/akhilsaklani7coder/Rail-sync)  
 **Detailed Team Allocation:** [TEAM_TASK_DIVISION.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/TEAM_TASK_DIVISION.md)  
