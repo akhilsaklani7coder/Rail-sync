@@ -289,6 +289,7 @@ npm --prefix frontend run build
 ## 8. Project Documentation & Academic Reports
 
 - **Academic Project Report:** [PROJECT_REPORT.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/PROJECT_REPORT.md)
+- **Team Task Distribution & Module Ownership:** [TEAM_TASK_DIVISION.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/TEAM_TASK_DIVISION.md)
 - **Containerization & Deployment Guide:** [DOCKER_GUIDE.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/DOCKER_GUIDE.md)
 - **Database Architecture & Data Dictionary:** [DATABASE_DOCUMENTATION.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/DATABASE_DOCUMENTATION.md)
 - **Installation & Setup Guide:** [SETUP_GUIDE.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/SETUP_GUIDE.md)
@@ -298,7 +299,22 @@ npm --prefix frontend run build
 
 ---
 
-## 8. Default Credentials
+## 9. Project Team & Task Distribution
+
+| Name | Role | Primary Modules |
+|---|---|---|
+| **Umanga** | **Team Leader & DevOps Architect** | Docker Compose, Containerization, Nginx Reverse Proxy, Git Governance |
+| **Akhil** | **Core Backend Architect** | Flask REST API, Booking Service, Payment Simulation, Fare Engine, Waitlist |
+| **Aditya** | **Frontend Architect & UI/UX Lead** | React 18 SPA, Faceted Search, Coach Seat Map, Checkout Modal, PNR UI |
+| **Vedansh** | **Database Architect** | MySQL 8.4 Schema (14 tables), Row Locking (`FOR UPDATE`), 206 Stops Dataset |
+| **Yash** | **Systems & Algorithms Engineer** | C++17 Dijkstra Engine ($\mathcal{O}((V+E)\log V)$), Mutex Synchronization, Python `ctypes` Bridge |
+| **Abhinav** | **QA Lead & Documentation Specialist** | 52 Automated Pytest Tests, Concurrency Verification, Academic Reports |
+
+*Detailed task ownership, file mappings, and viva topics: [TEAM_TASK_DIVISION.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/TEAM_TASK_DIVISION.md)*
+
+---
+
+## 10. Default Credentials
 
 The database seed script creates the following demo accounts:
 
@@ -309,15 +325,15 @@ The database seed script creates the following demo accounts:
 
 ---
 
-## 9. Academic PBL Assessment Criteria
+## 11. Academic PBL Assessment Criteria
 
 | Criteria | Implementation Evidence |
 | :--- | :--- |
 | **OS Primitives** | C++17 `std::mutex` critical section; `std::priority_queue` min-heap Dijkstra routing; counting semaphores bounding CPU-heavy PDF generation. |
 | **DBMS Transactions** | MySQL InnoDB ACID atomicity; row-level locking (`SELECT ... FOR UPDATE`); date-isolated relational seat allocation table. |
-| **Full-Stack Integration** | React 19 UI → RESTful Flask APIs → C++ in-memory ABI interop → MySQL InnoDB storage. |
+| **Full-Stack Integration** | React 18 UI → RESTful Flask APIs → C++ in-memory ABI interop → MySQL InnoDB storage. |
 | **Concurrency Protection** | Two simultaneous requests competing for the exact same seat: the first commits atomically, the second receives an immediate rejection with zero duplicate allocations. |
-| **Automated Testing** | 47 automated Pytest unit and integration tests verifying all critical workflows. |
+| **Automated Testing** | 52 automated Pytest unit and integration tests verifying all critical workflows. |
 
 ---
 

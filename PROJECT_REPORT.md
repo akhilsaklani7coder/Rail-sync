@@ -3,8 +3,16 @@
 
 **Course Project:** Problem Based Learning (Operating Systems & Database Management Systems)  
 **Academic Year:** 2026  
-**Candidate Name:** Akhil Saklani  
+**Project Team:**
+- **Umanga** (Team Leader & DevOps / System Architect)
+- **Akhil** (Core Backend Architect & Flask REST API Engineer)
+- **Aditya** (Frontend Architect & UI/UX Specialist)
+- **Vedansh** (Database Architect & SQL Concurrency Engineer)
+- **Yash** (Systems & Algorithms Engineer — C++17 Engine)
+- **Abhinav** (Quality Assurance, Automated Testing & Documentation)
+
 **Repository:** [https://github.com/akhilsaklani7coder/Rail-sync](https://github.com/akhilsaklani7coder/Rail-sync)  
+**Detailed Team Allocation:** [TEAM_TASK_DIVISION.md](file:///c:/Users/akhil/OneDrive/Documents/PROJECTS/pbl%20os%20and%20dbms/TEAM_TASK_DIVISION.md)  
 
 ---
 
